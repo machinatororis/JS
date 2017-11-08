@@ -7,7 +7,30 @@
 
 module __
 {
-    let r: degrees = 0;
+    let 
+        // угол первого спиннера
+        r0: degrees = 0,
+        /** угол второго спиннера */
+        r1: degrees = 0,
+        /** угол второго спиннера */
+        r2: degrees = 0,
+        /** скорость первого спиннера */
+        v0: degrees = 10,
+        /** скорость второго спиннера */
+        v1: degrees = 7,
+        /** скорость третьего спиннера */
+        v2: degrees = 12,
+        /** ускорение первого спиннера */
+        a0: degrees = -0.05,
+        a1: degrees = -0.05,
+        a2: degrees = -0.05,
+        /** счетчики */
+        c0: int = 0,
+        c1: int = 0,
+        c2: int = 0,
+        s0 :farray,
+        s1: farray,
+        s2: farray;
 
     /**
      * Конфигурация программы.
@@ -18,7 +41,6 @@ module __
         debugging:          true
     });
 
-
     /**
      * Формирование графических ресурсов.
      * Вызывается перед app_init и перед app_resize
@@ -26,51 +48,49 @@ module __
     app_graphics(() :void =>
     {
         $$init();
-        $$draw("spinner@spinner0", round(WIDTH / 2, 1), round(HEIGHT / 2, 1), 0, 1, 0.5, 0.5, (w: pixels, h: pixels, l: pixels) => {
-            //$frect ( 0, 0, w, h, "#000");
+        $$draw("spinner@spinner0", SIDE / 2 | 0, SIDE / 2 | 0, 0, 1, 0.5, 0.5, (w: pixels, h: pixels, l: pixels) => {
+            let fc :str = "#c7eb5e", 
+                cc :str = "#895ea7";
             $line_cap("round");
-           // $sline(w / 2, 10, w / 2, h - 10, "#ff0000", l * 10);
-            $fcircle(w / 2 , h / 4, h / 6, "#c7eb5e");
-            $scircle(w / 2 , h / 4, h / 6, "#895ea7", l * 10);
-            $fcircle(w * 0.3, h / 1.7, h / 6, "#c7eb5e");
-            $scircle(w * 0.3, h / 1.7, h / 6, "#895ea7", l * 10);
-            $fcircle(w * 0.7, h / 1.7, h / 6, "#c7eb5e");
-            $scircle(w * 0.7, h / 1.7, h / 6, "#895ea7", l * 10);
-            $fcircle(w / 2, h / 2 , h / 6, "#c7eb5e");
-            $fcircle(w / 2, h / 2 , 50, "#895ea7");
+            $fcircle(w / 2 , h / 4, h / 6, fc);
+            $scircle(w / 2 , h / 4, h / 6, cc, l * 10);
+            $fcircle(w * 0.3, h / 1.7, h / 6, fc);
+            $scircle(w * 0.3, h / 1.7, h / 6, cc, l * 10);
+            $fcircle(w * 0.7, h / 1.7, h / 6, fc);
+            $scircle(w * 0.7, h / 1.7, h / 6, cc, l * 10);
+            $fcircle(w / 2, h / 2 , h / 6, fc);
+            $fcircle(w / 2, h / 2 , 50, cc);
+
         }); 
-        $$draw("spinner@spinner1", round(WIDTH / 2, 1), round(HEIGHT / 2, 1), 0, 1, 0.5, 0.5, (w: pixels, h: pixels, l: pixels) => {
-            //$frect ( 0, 0, w, h, "#000");
+        $$draw("spinner@spinner1", SIDE / 2 | 0, SIDE / 2 | 0, 0, 1, 0.5, 0.5, (w: pixels, h: pixels, l: pixels) => {
             $line_cap("round");
-            //$sline(w / 2, 10, w / 2, h - 10, "#ff0000", l * 10);
-            //$fcircle(w / 2 , h / 4, h / 6, "#fcc");
-            //$fcircle(w * 0.3, h / 1.7, h / 6, "#fcc");
-            //$fcircle(w * 0.7, h / 1.7, h / 6, "#fcc");
-            $fcircle(w / 2, h / 2 , h / 6 + 10, "#17a5a3"); //центральный круг
-            $sline(w / 2, h / 2, w / 2, 80, "#17a5a3", l * 120);
-            $fcircle(w / 2, 80 , h / 6, "#17a5a3");
-            $fcircle(w / 2, 80 , 30, "#deeb7b"); //центр 
-            $sline(w / 2, h / 2, 120, h / 2 + 80, "#17a5a3", l * 120);
-            $fcircle(120, h / 2 + 80 , h / 6, "#17a5a3");
-            $fcircle(120, h / 2 + 80 , 30, "#deeb7b"); //центр 
-            $sline(w / 2, h / 2, 360, h / 2 + 70, "#17a5a3", l * 120);
-            $fcircle(360, h / 2 + 70 , h / 6, "#17a5a3");
-            $fcircle(360, h / 2 + 70 , 30, "#deeb7b"); //центр
-            $fcircle(w / 2, h / 2, 50, "#deeb7b"); //центр 
+            let fc :str = "#17a5a3", 
+                cc :str = "#deeb7b";
+            $fcircle(w / 2, h / 2 , h / 6 + 10, fc); // центральный круг
+            $sline(w / 2, h / 2, w / 2, 80, fc, l * 120);
+            $fcircle(w / 2, 80 , h / 6, fc);
+            $fcircle(w / 2, 80 , 30, cc); // центр 
+            $sline(w / 2, h / 2, 120, h / 2 + 80, fc, l * 120);
+            $fcircle(120, h / 2 + 80 , h / 6, fc);
+            $fcircle(120, h / 2 + 80 , 30, cc); // центр 
+            $sline(w / 2, h / 2, 360, h / 2 + 70, fc, l * 120);
+            $fcircle(360, h / 2 + 70 , h / 6, fc);
+            $fcircle(360, h / 2 + 70 , 30, cc); // центр
+            $fcircle(w / 2, h / 2, 50, cc); // центр 
             
         });
-        $$draw("spinner@spinner2", round(WIDTH / 2, 1), round(HEIGHT / 2, 1), 0, 1, 0.5, 0.5, (w: pixels, h: pixels, l: pixels) => {
-            //$frect ( 0, 0, w, h, "#000");
-            //$line_cap("round");
+        $$draw("spinner@spinner2", SIDE / 2 | 0, SIDE / 2 | 0, 0, 1, 0.5, 0.5, (w: pixels, h: pixels, l: pixels) => {
+            let fc :str = "#17a5a3", 
+                cc :str = "#98e2e1";
             $fcircle(w / 2, h / 2 , h / 6, "#da2865");
             $frect( w / 2 + 10, h / 2 + 10, 100, 100, "#da2865");
-            $frect( w / 2 + 50, h / 2 + 50, 50, 50, "#98e2e1"); //центр
+            $frect( w / 2 + 50, h / 2 + 50, 50, 50, "#98e2e1"); // центр
             $frect( w / 2 - 110, h / 2 - 110, 100, 100, "#da2865");
-            $frect( w / 2 - 100, h / 2 - 100, 50, 50, "#98e2e1"); //центр
+            $frect( w / 2 - 100, h / 2 - 100, 50, 50, "#98e2e1"); // центр
             $frect( w / 2 - 110, h / 2 + 10, 100, 100, "#da2865");
-            $frect( w / 2 - 100, h / 2 + 50, 50, 50, "#98e2e1"); //центр
+            $frect( w / 2 - 100, h / 2 + 50, 50, 50, "#98e2e1"); // центр
             $frect( w / 2 + 10, h / 2 - 110, 100, 100, "#da2865");
-            $frect( w / 2 + 50, h / 2 - 100, 50, 50, "#98e2e1"); //центр
+            $frect( w / 2 + 50, h / 2 - 100, 50, 50, "#98e2e1"); // центр
             $fcircle(w / 2, h / 2 , 50, "#98e2e1");
         });
 
@@ -84,18 +104,28 @@ module __
      */
     app_init(() =>
     {
-        if (DEBUGGING) log("app_init()");
-        log ("test");
+        s0 = sprite_create ("spinner@spinner0");
+        sprite_color (s0 , 0xffffff); // готовый цвет из объявления умножается на число
+        s1 = sprite_create ("spinner@spinner1");
+        sprite_color (s1 , 0xffffff); // готовый цвет из объявления умножается на число
+        s2 = sprite_create ("spinner@spinner2");
+        sprite_color (s2 , 0xffffff); // готовый цвет из объявления умножается на число
+
+        _resize(); // вызываем функцию _resize()
+        
     });
+
+    function _resize(): void{
+        sprite_pos (s0, SIDE / 2, SIDE / 3);
+        sprite_pos (s1, SIDE / 2 + 200, SIDE / 2 + 200);
+        sprite_pos (s2, SIDE / 2 - 200, SIDE / 2 + 200);
+    };
 
 
     /**
      * Изменение размеров контейнера канваса.
      */
-    app_resize(() =>
-    {
-        // if (DEBUGGING) log("app_resize() ");
-    });
+    app_resize (_resize);
 
 
     /**
@@ -104,7 +134,22 @@ module __
     app_update(() =>
     {
         // if (DEBUGGING) log("app_update() " + TICKS + " " + TIME);
-        r += 10;
+
+
+        if (v0 > 0) { 
+            v0 += a0;
+            sprite_rotate (s0, v0);
+        }
+
+        if (v1 > 0) { 
+            v1 += a1;
+            sprite_rotate (s1, v1);
+        }
+
+        if (v2 > 0) { 
+            v2 += a2;
+            sprite_rotate (s2, v2);
+        }
     });
 
 
@@ -133,10 +178,9 @@ module __
     app_draw(() :void =>
     {
         // if (DEBUGGING) log("app_draw() ");
-        sprite_draw("spinner@spinner0", WIDTH / 4, HEIGHT / 4, undefined, undefined, 1, 1, r);
-        sprite_draw("spinner@spinner1", WIDTH / 2 + 200, HEIGHT / 2 - 200, undefined, undefined, 1, 1, r);
-        sprite_draw("spinner@spinner2", WIDTH / 2 - 200, HEIGHT / 2 + 200, undefined, undefined, 1, 1, r);
-
+        sprite_draw(s0);
+        sprite_draw(s1);
+        sprite_draw(s2);
     });
 
 }
