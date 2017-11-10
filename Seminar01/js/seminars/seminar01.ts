@@ -15,14 +15,14 @@ module __
         /** угол второго спиннера */
         r2: degrees = 0,
         /** скорость первого спиннера */
-        v0: degrees = 10,
+        v0: degrees = 25,
         /** скорость второго спиннера */
-        v1: degrees = 7,
+        v1: degrees = 15,
         /** скорость третьего спиннера */
-        v2: degrees = 12,
+        v2: degrees = 20,
         /** ускорение первого спиннера */
-        a0: degrees = -0.05,
-        a1: degrees = -0.05,
+        a0: degrees = -0.07,
+        a1: degrees = -0.04,
         a2: degrees = -0.05,
         /** счетчики */
         c0: int = 0,
@@ -30,7 +30,11 @@ module __
         c2: int = 0,
         s0 :farray,
         s1: farray,
-        s2: farray;
+        s2: farray,
+        counter: farray[],
+        rotate: farray[]; // массив из массивов, составной спрайт
+
+
 
     /**
      * Конфигурация программы.
@@ -80,19 +84,21 @@ module __
             
         });
         $$draw("spinner@spinner2", SIDE / 2 | 0, SIDE / 2 | 0, 0, 1, 0.5, 0.5, (w: pixels, h: pixels, l: pixels) => {
-            let fc :str = "#17a5a3", 
+            let fc :str = "#da2865", 
                 cc :str = "#98e2e1";
-            $fcircle(w / 2, h / 2 , h / 6, "#da2865");
-            $frect( w / 2 + 10, h / 2 + 10, 100, 100, "#da2865");
-            $frect( w / 2 + 50, h / 2 + 50, 50, 50, "#98e2e1"); // центр
-            $frect( w / 2 - 110, h / 2 - 110, 100, 100, "#da2865");
-            $frect( w / 2 - 100, h / 2 - 100, 50, 50, "#98e2e1"); // центр
-            $frect( w / 2 - 110, h / 2 + 10, 100, 100, "#da2865");
-            $frect( w / 2 - 100, h / 2 + 50, 50, 50, "#98e2e1"); // центр
-            $frect( w / 2 + 10, h / 2 - 110, 100, 100, "#da2865");
-            $frect( w / 2 + 50, h / 2 - 100, 50, 50, "#98e2e1"); // центр
-            $fcircle(w / 2, h / 2 , 50, "#98e2e1");
+            $fcircle(w / 2, h / 2 , h / 6, fc);
+            $frect( w / 2 + 10, h / 2 + 10, 100, 100, fc);
+            $frect( w / 2 + 50, h / 2 + 50, 50, 50, cc); // центр
+            $frect( w / 2 - 110, h / 2 - 110, 100, 100, fc);
+            $frect( w / 2 - 100, h / 2 - 100, 50, 50, cc); // центр
+            $frect( w / 2 - 110, h / 2 + 10, 100, 100, fc);
+            $frect( w / 2 - 100, h / 2 + 50, 50, 50, cc); // центр
+            $frect( w / 2 + 10, h / 2 - 110, 100, 100, fc);
+            $frect( w / 2 + 50, h / 2 - 100, 50, 50, cc); // центр
+            $fcircle(w / 2, h / 2 , 50, cc);
         });
+        $$abc_symbols("spinner@counter", 50, 0, 1, 0.5, 0.5, "#98e2e1", 5, "0123456789, %");
+        $$abc_symbols("spinner@counter1", 50, 0, 1, 0.5, 0.5, "#98e2e1", 5, "0123456789, %");
 
         $$apply();
 
@@ -111,14 +117,29 @@ module __
         s2 = sprite_create ("spinner@spinner2");
         sprite_color (s2 , 0xffffff); // готовый цвет из объявления умножается на число
 
-        _resize(); // вызываем функцию _resize()
+        counter = scounter_create("spinner@counter", 6);
+        sprites_color (counter , 0x98e2e1);
+
+        rotate = scounter_create("spinner@counter1", 6);
+        sprites_color (rotate , 0x98e2e1);
+
+        scounter_val(counter, 0);
+        scounter_val(rotate, 0);
+
+        _resize(); // вызываем функцию _resize(), устанавливаем позиции, размеры...
+
         
     });
+
+    
 
     function _resize(): void{
         sprite_pos (s0, SIDE / 2, SIDE / 3);
         sprite_pos (s1, SIDE / 2 + 200, SIDE / 2 + 200);
         sprite_pos (s2, SIDE / 2 - 200, SIDE / 2 + 200);
+
+        scounter_align(counter, false, WIDTH, 0, ALIGNS.LT);
+        scounter_align(rotate, false, WIDTH / 2, HEIGHT / 2, ALIGNS.RB);
     };
 
 
@@ -150,6 +171,9 @@ module __
             v2 += a2;
             sprite_rotate (s2, v2);
         }
+
+        scounter_val(rotate, (s0[SP.rr] + s1[SP.rr] + s2[SP.rr]) / 360 | 0);  
+        scounter_align(rotate, false, WIDTH / 2, HEIGHT / 2, ALIGNS.RB);    
     });
 
 
@@ -158,7 +182,7 @@ module __
      */
     app_touches(() :bool =>
     {
-        if (DEBUGGING) log("app_touches() phase: " + TOUCHES[0].phase + " coords: " + TOUCHES[0].x + "x" + TOUCHES[0].y + " " + TOUCHES[0].prev_x + "x" + TOUCHES[0].prev_y);
+       /* if (DEBUGGING) log("app_touches() phase: " + TOUCHES[0].phase + " coords: " + TOUCHES[0].x + "x" + TOUCHES[0].y + " " + TOUCHES[0].prev_x + "x" + TOUCHES[0].prev_y);*/
         return false;
     });
 
@@ -167,8 +191,43 @@ module __
      */
     app_mouse(() :bool =>
     {
-        if (DEBUGGING) log("app_mouse() phase: " + MOUSE.phase + " coords: " + MOUSE.x + "x" + MOUSE.y + " " + MOUSE.prev_x + "x" + MOUSE.prev_y);
-        return false;
+        if (MOUSE.phase == TOUCH.BEGAN && scounter__val(counter) < 10) {
+            let va: int = scounter__val (counter); 
+            log(scounter__val (counter));
+            
+            scounter_val(counter, va + 1); // _ устанавливает значение, __ забирает значениe
+            scounter_align(counter, false, WIDTH, 0, ALIGNS.RT);
+            
+            let va1: int = scounter__val (rotate); 
+            log(scounter__val (rotate));
+            
+            scounter_val(rotate, va1 + 1); // _ устанавливает значение, __ забирает значениe
+            scounter_align(rotate, false, WIDTH / 2, HEIGHT / 2, ALIGNS.RB);
+
+            let dx0 = MOUSE.x - s0[SP.xx],
+                dy0 = MOUSE.y - s0[SP.yy],
+                dx1 = MOUSE.x - s1[SP.xx],
+                dy1 = MOUSE.y - s1[SP.yy],
+                dx2 = MOUSE.x - s2[SP.xx],
+                dy2 = MOUSE.y - s2[SP.yy];
+
+            let g0 = dx0 * dx0 + dy0 * dy0,
+                g1 = dx1 * dx1 + dy1 * dy1,
+                g2 = dx2 * dx2 + dy2 * dy2;
+
+            if (g0 <= g1 && g0 <= g2) {
+                v0 += Math.random() * 5 + 2;
+            }
+
+            if (g1 <= g0 && g1 <= g2) {
+                v1 += Math.random() * 5 + 2;
+            }
+
+            if (g2 <= g1 && g2 <= g0) {
+                v2 += Math.random() * 5 + 2;
+            }
+        }
+        return true;
     });
 
 
@@ -181,6 +240,9 @@ module __
         sprite_draw(s0);
         sprite_draw(s1);
         sprite_draw(s2);
+
+        sprites_draw(counter);
+        sprites_draw(rotate);
     });
 
 }

@@ -13,15 +13,15 @@ var __;
     /** угол второго спиннера */
     r2 = 0, 
     /** скорость первого спиннера */
-    v0 = 10, 
+    v0 = 25, 
     /** скорость второго спиннера */
-    v1 = 7, 
+    v1 = 15, 
     /** скорость третьего спиннера */
-    v2 = 12, 
+    v2 = 20, 
     /** ускорение первого спиннера */
-    a0 = -0.05, a1 = -0.05, a2 = -0.05, 
+    a0 = -0.07, a1 = -0.04, a2 = -0.05, 
     /** счетчики */
-    c0 = 0, c1 = 0, c2 = 0, s0, s1, s2;
+    c0 = 0, c1 = 0, c2 = 0, s0, s1, s2, counter, rotate; // массив из массивов, составной спрайт
     /**
      * Конфигурация программы.
      */
@@ -64,18 +64,20 @@ var __;
             __.$fcircle(w / 2, h / 2, 50, cc); // центр 
         });
         __.$$draw("spinner@spinner2", __.SIDE / 2 | 0, __.SIDE / 2 | 0, 0, 1, 0.5, 0.5, function (w, h, l) {
-            var fc = "#17a5a3", cc = "#98e2e1";
-            __.$fcircle(w / 2, h / 2, h / 6, "#da2865");
-            __.$frect(w / 2 + 10, h / 2 + 10, 100, 100, "#da2865");
-            __.$frect(w / 2 + 50, h / 2 + 50, 50, 50, "#98e2e1"); // центр
-            __.$frect(w / 2 - 110, h / 2 - 110, 100, 100, "#da2865");
-            __.$frect(w / 2 - 100, h / 2 - 100, 50, 50, "#98e2e1"); // центр
-            __.$frect(w / 2 - 110, h / 2 + 10, 100, 100, "#da2865");
-            __.$frect(w / 2 - 100, h / 2 + 50, 50, 50, "#98e2e1"); // центр
-            __.$frect(w / 2 + 10, h / 2 - 110, 100, 100, "#da2865");
-            __.$frect(w / 2 + 50, h / 2 - 100, 50, 50, "#98e2e1"); // центр
-            __.$fcircle(w / 2, h / 2, 50, "#98e2e1");
+            var fc = "#da2865", cc = "#98e2e1";
+            __.$fcircle(w / 2, h / 2, h / 6, fc);
+            __.$frect(w / 2 + 10, h / 2 + 10, 100, 100, fc);
+            __.$frect(w / 2 + 50, h / 2 + 50, 50, 50, cc); // центр
+            __.$frect(w / 2 - 110, h / 2 - 110, 100, 100, fc);
+            __.$frect(w / 2 - 100, h / 2 - 100, 50, 50, cc); // центр
+            __.$frect(w / 2 - 110, h / 2 + 10, 100, 100, fc);
+            __.$frect(w / 2 - 100, h / 2 + 50, 50, 50, cc); // центр
+            __.$frect(w / 2 + 10, h / 2 - 110, 100, 100, fc);
+            __.$frect(w / 2 + 50, h / 2 - 100, 50, 50, cc); // центр
+            __.$fcircle(w / 2, h / 2, 50, cc);
         });
+        __.$$abc_symbols("spinner@counter", 50, 0, 1, 0.5, 0.5, "#98e2e1", 5, "0123456789, %");
+        __.$$abc_symbols("spinner@counter1", 50, 0, 1, 0.5, 0.5, "#98e2e1", 5, "0123456789, %");
         __.$$apply();
     });
     /**
@@ -88,12 +90,20 @@ var __;
         __.sprite_color(s1, 0xffffff); // готовый цвет из объявления умножается на число
         s2 = __.sprite_create("spinner@spinner2");
         __.sprite_color(s2, 0xffffff); // готовый цвет из объявления умножается на число
-        _resize(); // вызываем функцию _resize()
+        counter = __.scounter_create("spinner@counter", 6);
+        __.sprites_color(counter, 0x98e2e1);
+        rotate = __.scounter_create("spinner@counter1", 6);
+        __.sprites_color(rotate, 0x98e2e1);
+        __.scounter_val(counter, 0);
+        __.scounter_val(rotate, 0);
+        _resize(); // вызываем функцию _resize(), устанавливаем позиции, размеры...
     });
     function _resize() {
         __.sprite_pos(s0, __.SIDE / 2, __.SIDE / 3);
         __.sprite_pos(s1, __.SIDE / 2 + 200, __.SIDE / 2 + 200);
         __.sprite_pos(s2, __.SIDE / 2 - 200, __.SIDE / 2 + 200);
+        __.scounter_align(counter, false, __.WIDTH, 0, 17 /* LT */);
+        __.scounter_align(rotate, false, __.WIDTH / 2, __.HEIGHT / 2, 68 /* RB */);
     }
     ;
     /**
@@ -117,22 +127,42 @@ var __;
             v2 += a2;
             __.sprite_rotate(s2, v2);
         }
+        __.scounter_val(rotate, (s0[4 /* rr */] + s1[4 /* rr */] + s2[4 /* rr */]) / 360 | 0);
+        __.scounter_align(rotate, false, __.WIDTH / 2, __.HEIGHT / 2, 68 /* RB */);
     });
     /**
      *  Обработка тачей.
      */
     __.app_touches(function () {
-        if (__.DEBUGGING)
-            __.log("app_touches() phase: " + __.TOUCHES[0].phase + " coords: " + __.TOUCHES[0].x + "x" + __.TOUCHES[0].y + " " + __.TOUCHES[0].prev_x + "x" + __.TOUCHES[0].prev_y);
+        /* if (DEBUGGING) log("app_touches() phase: " + TOUCHES[0].phase + " coords: " + TOUCHES[0].x + "x" + TOUCHES[0].y + " " + TOUCHES[0].prev_x + "x" + TOUCHES[0].prev_y);*/
         return false;
     });
     /**
      Обработка мышки.
      */
     __.app_mouse(function () {
-        if (__.DEBUGGING)
-            __.log("app_mouse() phase: " + __.MOUSE.phase + " coords: " + __.MOUSE.x + "x" + __.MOUSE.y + " " + __.MOUSE.prev_x + "x" + __.MOUSE.prev_y);
-        return false;
+        if (__.MOUSE.phase == 2 /* BEGAN */ && __.scounter__val(counter) < 10) {
+            var va = __.scounter__val(counter);
+            __.log(__.scounter__val(counter));
+            __.scounter_val(counter, va + 1); // _ устанавливает значение, __ забирает значениe
+            __.scounter_align(counter, false, __.WIDTH, 0, 65 /* RT */);
+            var va1 = __.scounter__val(rotate);
+            __.log(__.scounter__val(rotate));
+            __.scounter_val(rotate, va1 + 1); // _ устанавливает значение, __ забирает значениe
+            __.scounter_align(rotate, false, __.WIDTH / 2, __.HEIGHT / 2, 68 /* RB */);
+            var dx0 = __.MOUSE.x - s0[0 /* xx */], dy0 = __.MOUSE.y - s0[1 /* yy */], dx1 = __.MOUSE.x - s1[0 /* xx */], dy1 = __.MOUSE.y - s1[1 /* yy */], dx2 = __.MOUSE.x - s2[0 /* xx */], dy2 = __.MOUSE.y - s2[1 /* yy */];
+            var g0 = dx0 * dx0 + dy0 * dy0, g1 = dx1 * dx1 + dy1 * dy1, g2 = dx2 * dx2 + dy2 * dy2;
+            if (g0 <= g1 && g0 <= g2) {
+                v0 += Math.random() * 5 + 2;
+            }
+            if (g1 <= g0 && g1 <= g2) {
+                v1 += Math.random() * 5 + 2;
+            }
+            if (g2 <= g1 && g2 <= g0) {
+                v2 += Math.random() * 5 + 2;
+            }
+        }
+        return true;
     });
     /**
      * Фреймовая прорисовка.
@@ -142,6 +172,8 @@ var __;
         __.sprite_draw(s0);
         __.sprite_draw(s1);
         __.sprite_draw(s2);
+        __.sprites_draw(counter);
+        __.sprites_draw(rotate);
     });
 })(__ || (__ = {}));
 //# sourceMappingURL=seminar01.js.map

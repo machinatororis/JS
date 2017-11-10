@@ -389,17 +389,17 @@ declare module __
     export const enum TOUCH
     {
         /** Мышка над объеком без нажатия (только для мышки) */
-        HOVER           = 0,
+        HOVER           = 0x01,
             /** Нажатие пальцем на экран или нажатие кнопки мышки */
-        BEGAN           = 1,
+        BEGAN           = 0x02,
             /** Палец перемещается по экрану или мышка с нажатой кнопкой перемещается по экрану */
-        MOVED           = 2,
+        MOVED           = 0x04,
             /** Палец или мышка с нажатой кнопкой не перемещались по экрану за последний тик таймера */
-        STATIONARY      = 4,
+        STATIONARY      = 0x08,
             /** Палец отрывается от экрана или отжимается кнопка мышки */
-        ENDED           = 8,
+        ENDED           = 0x10,
             /** Комбинированый тач нажатие и перемещение */
-        BEGAN_MOVED     = 3
+        BEGAN_MOVED     = BEGAN | MOVED,
     }
 
     /** Типы блендинга */
@@ -1054,6 +1054,8 @@ declare module __
         readonly prev               :ITween;
         /** Следующий твин в списке */
         readonly next               :ITween;
+        /** Флаг рабочего твина */
+        readonly work               :bool;
     }
 
     /**
@@ -2490,9 +2492,10 @@ declare module __
      * @param style стиль шрифта
      * @param thickness ширина линии шрифта
      * @param text текст
+     * @param underline подчеркнуть текст
      */
     export function $$abc_text(cid :str, h :pixels, blur :pixels, sf :float,  px :Width, py :Height,
-                               style :str, thickness :pixels, text :str) :void;
+                               style :str, thickness :pixels, text :str, underline? :bool) :void;
 
     /**
      * Нариосвать текст в дефолтном шрифте.
@@ -2505,9 +2508,10 @@ declare module __
      * @param style стиль шрифта
      * @param thickness ширина линии шрифта
      * @param text текст
+     * @param underline подчеркнуть текст
      */
     export function $$abc_text$(cid :str, h :Side, blur :Length, sf :float, px :Width, py :Height,
-                                style :str, thickness :Length, text :str) :void;
+                                style :str, thickness :Length, text :str, underline? :bool) :void;
 
     /**
      * Cформировать конфигурацию атласа.
@@ -3429,6 +3433,15 @@ declare module __
     export const is_sprite_type :(sp :farray, type :ST) =>bool;
 
     /**
+     * Проверка на наличие точки внутри спрайта.
+     * @param sp спрайт
+     * @param x координата
+     * @param y координата
+     * @return {boolean}
+     */
+    export function sprite_point_in(sp :farray, x :pixels, y :pixels) :bool;
+
+    /**
      * Нарисовать спрайт
      * @param sp спрайт
      */
@@ -3534,6 +3547,16 @@ declare module __
     export function sprites_func(sp :farray[], func :(s :farray) =>void) :farray[];
 
     /**
+     * Установить спрайты по абсолютным координатам
+     * @param sp спрайт
+     * @param x координата
+     * @param y координата
+     * @param align точка отсчета
+     * @returns {Float32Array}
+     */
+    export function sprites_pos(sp :farray[], x :pixels, y :pixels, align? :ALIGNS) :farray[];
+
+    /**
      * Установить альфу.
      * @param sp спрайты
      * @param alpha значение альфы
@@ -3616,9 +3639,17 @@ declare module __
     /**
      * Значение счетчика.
      * @param cn счетчик
+     * @param val значение
+     * @return {Float32Array}
+     */
+    export let scounter_val :(cn :farray[], val :int) =>farray[];
+
+    /**
+     * Значение счетчика.
+     * @param cn счетчик
      * @return {number}
      */
-    export let scounter_val :(cn :farray[]) =>int;
+    export let scounter__val :(cn :farray[]) =>int;
 
     /**
      * Установить позицию правого нижнего угла базовой лини счетчика
@@ -3633,13 +3664,12 @@ declare module __
     /**
      * Выровнять значащие символы счетчика относительно заданной точки.
      * @param cn счетчик
-     * @param val значение счетчика
      * @param ending вывод конечного символа (например %)
      * @param xx точка относительно которой производится выравнивание
      * @param yy точка относительно которой производится выравнивание
      * @param align выравнивание
      */
-    export function scounter_align(cn :farray[], val :int, ending :bool, xx :pixels, yy :pixels, align :ALIGNS) :void;
+    export function scounter_align(cn :farray[], ending :bool, xx :pixels, yy :pixels, align :ALIGNS) :void;
 
 
     //// js/__/web/app.ts
