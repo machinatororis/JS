@@ -21,7 +21,7 @@ var __;
     /** ускорение первого спиннера */
     a0 = -0.07, a1 = -0.04, a2 = -0.05, 
     /** счетчики */
-    c0 = 0, c1 = 0, c2 = 0, s0, s1, s2, counter, rotate; // массив из массивов, составной спрайт
+    c0 = 0, c1 = 0, c2 = 0, s0, s1, s2, counter, counter1; // массив из массивов, составной спрайт
     /**
      * Конфигурация программы.
      */
@@ -76,8 +76,8 @@ var __;
             __.$frect(w / 2 + 50, h / 2 - 100, 50, 50, cc); // центр
             __.$fcircle(w / 2, h / 2, 50, cc);
         });
-        __.$$abc_symbols("spinner@counter", 50, 0, 1, 0.5, 0.5, "#98e2e1", 5, "0123456789, %");
-        __.$$abc_symbols("spinner@counter1", 50, 0, 1, 0.5, 0.5, "#98e2e1", 5, "0123456789, %");
+        __.$$abc_symbols("spinner@counter", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %");
+        __.$$abc_symbols("spinner@counter1", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %");
         __.$$apply();
     });
     /**
@@ -90,20 +90,22 @@ var __;
         __.sprite_color(s1, 0xffffff); // готовый цвет из объявления умножается на число
         s2 = __.sprite_create("spinner@spinner2");
         __.sprite_color(s2, 0xffffff); // готовый цвет из объявления умножается на число
-        counter = __.scounter_create("spinner@counter", 6);
-        __.sprites_color(counter, 0x98e2e1);
-        rotate = __.scounter_create("spinner@counter1", 6);
-        __.sprites_color(rotate, 0x98e2e1);
+        counter = __.scounter_create("spinner@counter", 6); // считаем обороты вращения спиннера
+        __.sprites_color(counter, 0xda2865);
+        counter1 = __.scounter_create("spinner@counter1", 6); // считаем обороты вращения спиннера
+        __.sprites_color(counter1, 0xda2865);
         __.scounter_val(counter, 0);
-        __.scounter_val(rotate, 0);
+        __.scounter_val(counter1, 0);
         _resize(); // вызываем функцию _resize(), устанавливаем позиции, размеры...
     });
     function _resize() {
         __.sprite_pos(s0, __.SIDE / 2, __.SIDE / 3);
         __.sprite_pos(s1, __.SIDE / 2 + 200, __.SIDE / 2 + 200);
         __.sprite_pos(s2, __.SIDE / 2 - 200, __.SIDE / 2 + 200);
-        __.scounter_align(counter, false, __.WIDTH, 0, 17 /* LT */);
-        __.scounter_align(rotate, false, __.WIDTH / 2, __.HEIGHT / 2, 68 /* RB */);
+        __.scounter_align(counter, false, __.WIDTH, __.HEIGHT - 10, 68 /* RB */);
+        __.scounter_align(counter1, false, __.WIDTH, 0, 65 /* RT */);
+        __.scounter_val(counter, 0); // устанавливаем 0, пока кликов мышью не было
+        __.scounter_align(counter, false, __.WIDTH, __.HEIGHT - 10, 68 /* RB */);
     }
     ;
     /**
@@ -127,8 +129,8 @@ var __;
             v2 += a2;
             __.sprite_rotate(s2, v2);
         }
-        __.scounter_val(rotate, (s0[4 /* rr */] + s1[4 /* rr */] + s2[4 /* rr */]) / 360 | 0);
-        __.scounter_align(rotate, false, __.WIDTH / 2, __.HEIGHT / 2, 68 /* RB */);
+        __.scounter_val(counter1, (s0[4 /* rr */] + s1[4 /* rr */] + s2[4 /* rr */]) / 360 | 0);
+        __.scounter_align(counter1, false, __.WIDTH, 0, 65 /* RT */);
     });
     /**
      *  Обработка тачей.
@@ -145,11 +147,11 @@ var __;
             var va = __.scounter__val(counter);
             __.log(__.scounter__val(counter));
             __.scounter_val(counter, va + 1); // _ устанавливает значение, __ забирает значениe
-            __.scounter_align(counter, false, __.WIDTH, 0, 65 /* RT */);
-            var va1 = __.scounter__val(rotate);
-            __.log(__.scounter__val(rotate));
-            __.scounter_val(rotate, va1 + 1); // _ устанавливает значение, __ забирает значениe
-            __.scounter_align(rotate, false, __.WIDTH / 2, __.HEIGHT / 2, 68 /* RB */);
+            __.scounter_align(counter, false, __.WIDTH, __.HEIGHT - 10, 68 /* RB */);
+            var va1 = __.scounter__val(counter1);
+            __.log(__.scounter__val(counter1));
+            __.scounter_val(counter1, va1 + 1); // _ устанавливает значение, __ забирает значениe
+            __.scounter_align(counter1, false, __.WIDTH, 0, 65 /* RT */);
             var dx0 = __.MOUSE.x - s0[0 /* xx */], dy0 = __.MOUSE.y - s0[1 /* yy */], dx1 = __.MOUSE.x - s1[0 /* xx */], dy1 = __.MOUSE.y - s1[1 /* yy */], dx2 = __.MOUSE.x - s2[0 /* xx */], dy2 = __.MOUSE.y - s2[1 /* yy */];
             var g0 = dx0 * dx0 + dy0 * dy0, g1 = dx1 * dx1 + dy1 * dy1, g2 = dx2 * dx2 + dy2 * dy2;
             if (g0 <= g1 && g0 <= g2) {
@@ -173,7 +175,7 @@ var __;
         __.sprite_draw(s1);
         __.sprite_draw(s2);
         __.sprites_draw(counter);
-        __.sprites_draw(rotate);
+        __.sprites_draw(counter1);
     });
 })(__ || (__ = {}));
 //# sourceMappingURL=seminar01.js.map

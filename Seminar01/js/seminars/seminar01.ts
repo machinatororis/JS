@@ -32,7 +32,7 @@ module __
         s1: farray,
         s2: farray,
         counter: farray[],
-        rotate: farray[]; // массив из массивов, составной спрайт
+        counter1: farray[]; // массив из массивов, составной спрайт
 
 
 
@@ -97,8 +97,8 @@ module __
             $frect( w / 2 + 50, h / 2 - 100, 50, 50, cc); // центр
             $fcircle(w / 2, h / 2 , 50, cc);
         });
-        $$abc_symbols("spinner@counter", 50, 0, 1, 0.5, 0.5, "#98e2e1", 5, "0123456789, %");
-        $$abc_symbols("spinner@counter1", 50, 0, 1, 0.5, 0.5, "#98e2e1", 5, "0123456789, %");
+        $$abc_symbols("spinner@counter", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %");
+        $$abc_symbols("spinner@counter1", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %");
 
         $$apply();
 
@@ -117,14 +117,14 @@ module __
         s2 = sprite_create ("spinner@spinner2");
         sprite_color (s2 , 0xffffff); // готовый цвет из объявления умножается на число
 
-        counter = scounter_create("spinner@counter", 6);
-        sprites_color (counter , 0x98e2e1);
+        counter = scounter_create("spinner@counter", 6); // считаем обороты вращения спиннера
+        sprites_color (counter , 0xda2865);
 
-        rotate = scounter_create("spinner@counter1", 6);
-        sprites_color (rotate , 0x98e2e1);
+        counter1 = scounter_create("spinner@counter1", 6); // считаем обороты вращения спиннера
+        sprites_color (counter1 , 0xda2865);
 
         scounter_val(counter, 0);
-        scounter_val(rotate, 0);
+        scounter_val(counter1, 0);
 
         _resize(); // вызываем функцию _resize(), устанавливаем позиции, размеры...
 
@@ -138,8 +138,11 @@ module __
         sprite_pos (s1, SIDE / 2 + 200, SIDE / 2 + 200);
         sprite_pos (s2, SIDE / 2 - 200, SIDE / 2 + 200);
 
-        scounter_align(counter, false, WIDTH, 0, ALIGNS.LT);
-        scounter_align(rotate, false, WIDTH / 2, HEIGHT / 2, ALIGNS.RB);
+        scounter_align(counter, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
+        scounter_align(counter1, false, WIDTH, 0, ALIGNS.RT);
+
+        scounter_val(counter, 0); // устанавливаем 0, пока кликов мышью не было
+        scounter_align(counter, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
     };
 
 
@@ -172,8 +175,8 @@ module __
             sprite_rotate (s2, v2);
         }
 
-        scounter_val(rotate, (s0[SP.rr] + s1[SP.rr] + s2[SP.rr]) / 360 | 0);  
-        scounter_align(rotate, false, WIDTH / 2, HEIGHT / 2, ALIGNS.RB);    
+        scounter_val(counter1, (s0[SP.rr] + s1[SP.rr] + s2[SP.rr]) / 360 | 0);  
+        scounter_align(counter1, false, WIDTH, 0, ALIGNS.RT);  
     });
 
 
@@ -196,13 +199,13 @@ module __
             log(scounter__val (counter));
             
             scounter_val(counter, va + 1); // _ устанавливает значение, __ забирает значениe
-            scounter_align(counter, false, WIDTH, 0, ALIGNS.RT);
+            scounter_align(counter, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
             
-            let va1: int = scounter__val (rotate); 
-            log(scounter__val (rotate));
+            let va1: int = scounter__val (counter1); 
+            log(scounter__val (counter1));
             
-            scounter_val(rotate, va1 + 1); // _ устанавливает значение, __ забирает значениe
-            scounter_align(rotate, false, WIDTH / 2, HEIGHT / 2, ALIGNS.RB);
+            scounter_val(counter1, va1 + 1); // _ устанавливает значение, __ забирает значениe
+            scounter_align(counter1, false, WIDTH, 0, ALIGNS.RT);
 
             let dx0 = MOUSE.x - s0[SP.xx],
                 dy0 = MOUSE.y - s0[SP.yy],
@@ -242,7 +245,7 @@ module __
         sprite_draw(s2);
 
         sprites_draw(counter);
-        sprites_draw(rotate);
+        sprites_draw(counter1);
     });
 
 }
