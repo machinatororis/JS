@@ -4,6 +4,9 @@ module __
 {
     const CCOUNT:int = 100;
     let circles:farray[] = [], // массив пустой, типа array
+        cnt_click :farray[], // счетчик кликов мышью
+        cnt_circles :farray[], // счетчик закрашенных шаров
+        //cl_circles :int = 0, // переменная для подсчета закрашенных шаров
         r: pixels; 
     
     
@@ -29,6 +32,9 @@ module __
         $$draw("game@circle", r * 2, r * 2, 0, 2, 0.5, 0.5, (w: pixels) => {
             $fcircle (r, r, r, "#ffffff");
         });
+        
+        $$abc_symbols("game@cnt_click", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %"); // рисуем счетчик кликов мышью 
+        $$abc_symbols("game@cnt_circles", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %"); // рисуем счетчик закрашенных шаров     
         $$apply(); // закрывает
 
     });
@@ -39,6 +45,15 @@ module __
      */
     app_init(() =>
     {
+        cnt_click = scounter_create("game@cnt_click", 6);
+        sprites_color (cnt_click, 0xda2865);
+
+        cnt_circles = scounter_create("game@cnt_circles", 6);
+        sprites_color (cnt_circles, 0xda2865);
+
+        scounter_val(cnt_click, 0); // устанавливаем в счетчик 0
+        scounter_val(cnt_circles, 0);
+
         for (let i = 0; i < CCOUNT; ++i)    
         {
             let s :farray = sprite_create("game@circle");
@@ -49,10 +64,16 @@ module __
             sprite_color (s , 0xffffff); // готовый цвет из объявления умножается на число
 
             // circles.push (sprite_create("game@circle")); //  push добавляет в конец массива созданный массив float32array
-        }    
+        }  
+        _resize(); // вызываем функцию _resize(), устанавливаем позиции, размеры...  
     });
 
     function _resize(): void{
+        scounter_align(cnt_click, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
+        scounter_align(cnt_circles, false, WIDTH, 0, ALIGNS.RT);
+
+        scounter_val(cnt_click, 0); // устанавливаем 0, пока кликов мышью не было
+        scounter_align(cnt_click, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
     };
 
 
@@ -89,7 +110,16 @@ module __
      */
     app_mouse(() :bool =>
     {
-        if (MOUSE.phase == TOUCH.BEGAN) {
+        if (MOUSE.phase == TOUCH.BEGAN && scounter__val(cnt_click) < 10){
+            let cl_click: int = scounter__val (cnt_click); // получили значение счетчика
+            
+            scounter_val(cnt_click, cl_click + 1); // установили значение счетчика + 1
+            scounter_align(cnt_click, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
+
+            let cl_circles: int = scounter__val (cnt_circles); // в переменную положили текущее значение счетчика закрашенных шаров
+            
+            scounter_val(cnt_circles, cl_circles + 1); // _ устанавливает значение, __ забирает значениe
+            scounter_align(cnt_circles, false, WIDTH, 0, ALIGNS.RT);
 
             let r4 :pixels = 4 * r,
                 s  :farray;    
@@ -99,7 +129,9 @@ module __
                     my :pixels = MOUSE.y - s[SP.yy],
                     dist = mx * mx + my * my;
                 if (dist < r4 * r4){
-                    sprite_color(s, 0x123456, 1); 
+                    sprite_color(s, 0x123456, 1); // перекрашиваем в цвет
+                    cl_circles++; // при перекрашивании увеличиваем счетчик шаров на 1
+                    scounter_val(cnt_circles, cl_circles); // устанавливаем в счетчик закрашенных шаров новое значение
                 }
             }
         
@@ -116,6 +148,8 @@ module __
     {
         // sprite_draw ("game@circle", WIDTH / 2, HEIGHT / 2); // рисуем атлас game@circle
         sprites_draw(circles);
+        sprites_draw(cnt_click); // отрисовка счетчика кликов мышью
+        sprites_draw(cnt_circles);
     });
 
 }
