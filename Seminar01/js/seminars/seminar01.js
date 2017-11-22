@@ -129,7 +129,7 @@ var __;
             v2 += a2;
             __.sprite_rotate(s2, v2);
         }
-        __.scounter_val(counter1, (s0[4 /* rr */] + s1[4 /* rr */] + s2[4 /* rr */]) / 360 | 0);
+        __.scounter_val(counter1, s0[4 /* rr */] / 360 + s1[4 /* rr */] / 360 + s2[4 /* rr */] / 360 | 0);
         __.scounter_align(counter1, false, __.WIDTH, 0, 65 /* RT */);
     });
     /**

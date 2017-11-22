@@ -175,7 +175,7 @@ module __
             sprite_rotate (s2, v2);
         }
 
-        scounter_val(counter1, (s0[SP.rr] + s1[SP.rr] + s2[SP.rr]) / 360 | 0);  
+        scounter_val(counter1, s0[SP.rr] / 360 + s1[SP.rr] / 360 + s2[SP.rr] / 360 | 0);  
         scounter_align(counter1, false, WIDTH, 0, ALIGNS.RT);  
     });
 
