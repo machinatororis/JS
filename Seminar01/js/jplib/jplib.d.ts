@@ -1905,6 +1905,12 @@ declare module __
     export function $image_data_get(x? :pixels, y? :pixels, width? :pixels, height? :pixels) :ImageData;
 
     /**
+     * Перевод контекста в base64
+     * @return {string}
+     */
+    export function $to_data_url() :str;
+
+    /**
      * Нарисовать битмап.
      * @param idata битмап
      * @param x левый верхний угол в контексте
@@ -3475,6 +3481,23 @@ declare module __
                                 cr? :float, cg? :float, cb? :float, ca? :float) :void;
 
     /**
+     * Твин спрайта
+     * @param sp спрайт
+     * @param func функция изменения значения спрайта
+     * @param sv начальное значение твина
+     * @param ev конечное значение твина
+     * @param rmodule округление
+     * @param time время (< 0 в тиках)
+     * @param transition функция транзиции
+     * @param {=}delay время задержки (< 0 в тиках)
+     * @param {=}sf функция, срабатываемая при запуске твина
+     * @param {=}ef функция, срабатываемая при окончании твина
+     * @return {Float32Array}
+     */
+    export function sprite_tween(sp :farray, func :(sp :farray, val :float) =>void, sv :float, ev :float, rmodule :int, time :double|int, transition :TweenTransition,
+                                 delay? :float|int, sf? :(obj :any) =>void, ef? :(obj :any) =>void) :farray;
+
+    /**
      * Твин позиции
      * @param sp спрайт
      * @param sx начальная координата х
@@ -3536,6 +3559,21 @@ declare module __
      * @return {Float32Array}
      */
     export function sprite_talpha(sp :farray, sv :float, ev :float, time :double|int, transition :TweenTransition,
+                                  delay? :float|int, sf? :(obj :any) =>void, ef? :(obj :any) =>void) :farray;
+
+    /**
+     * Твин масштаба
+     * @param sp спрайт
+     * @param sv начальный масштаб
+     * @param ev конечный масштаб
+     * @param time время (< 0 в тиках)
+     * @param transition функция транзиции
+     * @param {=}delay время задержки (< 0 в тиках)
+     * @param {=}sf функция, срабатываемая при запуске твина
+     * @param {=}ef функция, срабатываемая при окончании твина
+     * @return {Float32Array}
+     */
+    export function sprite_tscale(sp :farray, sv :float, ev :float, time :double|int, transition :TweenTransition,
                                   delay? :float|int, sf? :(obj :any) =>void, ef? :(obj :any) =>void) :farray;
 
     /**
