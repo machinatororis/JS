@@ -6,7 +6,7 @@ var __;
     target, cnt_click, // счетчик кликов мышью
     cnt_circles, // счетчик закрашенных шаров
     //cl_circles :int = 0, // переменная для подсчета закрашенных шаров
-    r;
+    bg, r;
     /**
      * Конфигурация программы.
      */
@@ -23,10 +23,16 @@ var __;
         r = __.SIDE * 0.02 | 0; //радиус, где SIDE - меньшая сторона браузера, умн. на 0,05 и округленная в меньшую сторону
         __.$$init(); // инициализирует
         __.$$draw("game@circle", r * 2, r * 2, 0, 1, 0.5, 0.5, function (w) {
+            //расположение спрайта по х и у
+            //sf - скейл относительно изначально заданного спрайта для того, чтобы при растягивании не билась графика
+            //высота и ширина спрайта равны двум радиусам
             __.$fcircle(r, r, r, "#ffffff");
         });
         __.$$draw("game@target", r * 12, r * 12, 0, 1, 0.5, 0.5, function (w) {
             __.$fcircle(r * 6, r * 6, r * 6, "#ffffff");
+        });
+        __.$$draw("game@bg", __.WIDTH, __.HEIGHT, 0, 1, 0.5, 0.5, function (w) {
+            __.$frect(0, 0, __.WIDTH, __.HEIGHT, "#8ad2ce");
         });
         __.$$abc_symbols("game@cnt_click", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %"); // рисуем счетчик кликов мышью 
         __.$$abc_symbols("game@cnt_circles", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %"); // рисуем счетчик закрашенных шаров 
@@ -40,16 +46,20 @@ var __;
         __.sprites_color(cnt_click, 0xda2865);
         cnt_circles = __.scounter_create("game@cnt_circles", 6);
         __.sprites_color(cnt_circles, 0xda2865);
+        bg = __.sprite_create("game@bg", __.WIDTH / 2, __.HEIGHT / 2, __.WIDTH * 2, __.HEIGHT * 2);
         __.scounter_val(cnt_click, 0); // устанавливаем в счетчик 0
         __.scounter_val(cnt_circles, 0);
+        __.sprites_color(cnt_circles, 0xffffff);
+        __.sprites_color(cnt_click, 0xffffff);
+        __.sprite_color(bg, 0x8ad2ce);
         target = __.sprite_create("game@target");
-        __.sprite_color(target, 0xff0000);
+        __.sprite_color(target, 0xc3beca);
         __.sprite_alpha(target, 0);
         for (var i = 0; i < CCOUNT; ++i) {
-            var s = __.sprite_create("game@circle");
-            s[22 /* bb */] = Math.random() * 2 - 1; // от -1 до 1
+            var s = __.sprite_create("game@circle"); //в массив s записываем массив нашего созданного спрайта game@circle
+            s[22 /* bb */] = Math.random() * 2 - 1; // присваиваем 22 и 23 элементам массива рандомное значение
             s[23 /* cc */] = Math.random() * 2 - 1;
-            circles.push(s);
+            circles.push(s); //заполняем массив сircles спрайтами
             __.sprite_pos(s, __.WIDTH * Math.random(), __.HEIGHT * Math.random()); // создали 100 разных кружков на экране
             __.sprite_color(s, 0xffffff); // готовый цвет из объявления умножается на число
             // circles.push (sprite_create("game@circle")); //  push добавляет в конец массива созданный массив float32array
@@ -73,13 +83,13 @@ var __;
     __.app_update(function () {
         var s;
         for (var i = 0; i < CCOUNT; ++i) {
-            s = circles[i];
-            __.sprite_move(s, s[22 /* bb */], s[23 /* cc */]);
+            s = circles[i]; //присваиваем s спрайт данной итерации
+            __.sprite_move(s, s[22 /* bb */], s[23 /* cc */]); //перемещаем спрайт на рандомное расстояние
             if (__.sprite__pos_x(s) < 0 || __.sprite__pos_x(s) > __.WIDTH) {
-                s[22 /* bb */] *= -1;
+                s[22 /* bb */] *= -1; //меняем его движение на прямо противоположное
             }
             if (__.sprite__pos_y(s) < 0 || __.sprite__pos_y(s) > __.HEIGHT) {
-                s[23 /* cc */] *= -1;
+                s[23 /* cc */] *= -1; //меняем его движение на прямо противоположное
             }
         }
         check_circles();
@@ -102,14 +112,15 @@ var __;
         return true;
     });
     function check_circles() {
-        var color = 0x123456;
+        var color = 0xda2865; // цвет, в который перекрашиваем
         if (__.sprite__alpha(target) > 0) {
             var cl_crcl = __.scounter__val(cnt_circles), // в переменную положили текущее значение счетчика закрашенных шаров
-            r4 = 7 * r, s = void 0;
+            r7 = 7 * r, s = void 0, cur_r = void 0;
             for (var i = 0; i < CCOUNT; ++i) {
+                cur_r = __.sprite__scale(target) * __.sprite__scale(target) * r7 * r7; //вычисляем scale таргета в данный момент времени
                 s = circles[i];
                 var mx = __.sprite__pos_x(target) - s[0 /* xx */], my = __.sprite__pos_y(target) - s[1 /* yy */], dist = mx * mx + my * my;
-                if (dist < r4 * r4 && s[7 /* aa */] !== 1) {
+                if (dist < cur_r && s[7 /* aa */] !== 1) {
                     __.sprite_color(s, color, 1); // перекрашиваем в цвет
                     s[7 /* aa */] = 1;
                     cl_crcl++; // при перекрашивании увеличиваем счетчик шаров на 1                   
@@ -125,6 +136,7 @@ var __;
      */
     __.app_draw(function () {
         // sprite_draw ("game@circle", WIDTH / 2, HEIGHT / 2); // рисуем атлас game@circle
+        __.sprite_draw(bg);
         __.sprite_draw(target);
         __.sprites_draw(circles);
         __.sprites_draw(cnt_click); // отрисовка счетчика кликов мышью
