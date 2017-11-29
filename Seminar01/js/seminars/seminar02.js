@@ -7,6 +7,7 @@ var __;
     cnt_circles, // счетчик закрашенных шаров
     //cl_circles :int = 0, // переменная для подсчета закрашенных шаров
     bg, r;
+    var iscolored = [];
     /**
      * Конфигурация программы.
      */
@@ -31,11 +32,11 @@ var __;
         __.$$draw("game@target", r * 12, r * 12, 0, 1, 0.5, 0.5, function (w) {
             __.$fcircle(r * 6, r * 6, r * 6, "#ffffff");
         });
-        __.$$draw("game@bg", __.WIDTH, __.HEIGHT, 0, 1, 0.5, 0.5, function (w) {
-            __.$frect(0, 0, __.WIDTH, __.HEIGHT, "#8ad2ce");
+        __.$$draw("game@bg", __.WIDTH / 2, __.HEIGHT, 0, 1, 0.5, 0.5, function (w) {
+            __.$frect(0, 0, __.WIDTH / 2, __.HEIGHT, "#a1abba");
         });
-        __.$$abc_symbols("game@cnt_click", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %"); // рисуем счетчик кликов мышью 
-        __.$$abc_symbols("game@cnt_circles", 50, 0, 1, 0.5, 0.5, "#da2865", 5, "0123456789, %"); // рисуем счетчик закрашенных шаров 
+        __.$$abc_symbols("game@cnt_click", 50, 0, 1, 0.5, 0.5, "#122d1a", 5, "0123456789, %"); // рисуем счетчик кликов мышью 
+        __.$$abc_symbols("game@cnt_circles", 50, 0, 1, 0.5, 0.5, "#122d1a", 5, "0123456789, %"); // рисуем счетчик закрашенных шаров 
         __.$$apply(); // закрывает
     });
     /**
@@ -43,17 +44,17 @@ var __;
      */
     __.app_init(function () {
         cnt_click = __.scounter_create("game@cnt_click", 6);
-        __.sprites_color(cnt_click, 0xda2865);
+        __.sprites_color(cnt_click, 0x122d1a);
         cnt_circles = __.scounter_create("game@cnt_circles", 6);
-        __.sprites_color(cnt_circles, 0xda2865);
-        bg = __.sprite_create("game@bg", __.WIDTH / 2, __.HEIGHT / 2, __.WIDTH * 2, __.HEIGHT * 2);
-        __.scounter_val(cnt_click, 0); // устанавливаем в счетчик 0
+        __.sprites_color(cnt_circles, 0x122d1a);
+        bg = __.sprite_create("game@bg", __.WIDTH / 4, __.HEIGHT / 2, __.WIDTH / 2, __.HEIGHT * 2);
+        __.scounter_val(cnt_click, 10); // устанавливаем в счетчик 0
         __.scounter_val(cnt_circles, 0);
         __.sprites_color(cnt_circles, 0xffffff);
         __.sprites_color(cnt_click, 0xffffff);
-        __.sprite_color(bg, 0x8ad2ce);
+        __.sprite_color(bg, 0x1328af);
         target = __.sprite_create("game@target");
-        __.sprite_color(target, 0xc3beca);
+        __.sprite_color(target, 0xebce7d);
         __.sprite_alpha(target, 0);
         for (var i = 0; i < CCOUNT; ++i) {
             var s = __.sprite_create("game@circle"); //в массив s записываем массив нашего созданного спрайта game@circle
@@ -69,7 +70,7 @@ var __;
     function _resize() {
         __.scounter_align(cnt_click, false, __.WIDTH, __.HEIGHT - 10, 68 /* RB */);
         __.scounter_align(cnt_circles, false, __.WIDTH, 0, 65 /* RT */);
-        __.scounter_val(cnt_click, 0); // устанавливаем 0, пока кликов мышью не было
+        __.scounter_val(cnt_click, 10); // устанавливаем 0, пока кликов мышью не было
         __.scounter_align(cnt_click, false, __.WIDTH, __.HEIGHT - 10, 68 /* RB */);
     }
     ;
@@ -98,7 +99,7 @@ var __;
      Обработка мышки.
      */
     __.app_mouse(function () {
-        if (__.MOUSE.phase == 2 /* BEGAN */ && __.scounter__val(cnt_click) < 10 && __.sprite__alpha(target) == 0) {
+        if (__.MOUSE.phase == 2 /* BEGAN */ && __.scounter__val(cnt_click) > 0 && __.sprite__alpha(target) == 0) {
             __.sprite_alpha(target, 1);
             __.sprite_pos(target, __.MOUSE.x, __.MOUSE.y);
             __.sprite_tscale(target, 0, 1, -180, __.EASE_LINEAR);
@@ -106,13 +107,13 @@ var __;
                 __.sprite_alpha(target, 0);
             }, -240);
             var cl_click = __.scounter__val(cnt_click); // получили значение счетчика
-            __.scounter_val(cnt_click, cl_click + 1); // установили значение счетчика + 1
+            __.scounter_val(cnt_click, cl_click - 1); // установили значение счетчика + 1
             __.scounter_align(cnt_click, false, __.WIDTH, __.HEIGHT - 10, 68 /* RB */);
         }
         return true;
     });
     function check_circles() {
-        var color = 0xda2865; // цвет, в который перекрашиваем
+        var color_yel = 0xad9601, color_blue = 0x01adaa; // цвет, в который перекрашиваем
         if (__.sprite__alpha(target) > 0) {
             var cl_crcl = __.scounter__val(cnt_circles), // в переменную положили текущее значение счетчика закрашенных шаров
             r7 = 7 * r, s = void 0, cur_r = void 0;
@@ -120,10 +121,17 @@ var __;
                 cur_r = __.sprite__scale(target) * __.sprite__scale(target) * r7 * r7; //вычисляем scale таргета в данный момент времени
                 s = circles[i];
                 var mx = __.sprite__pos_x(target) - s[0 /* xx */], my = __.sprite__pos_y(target) - s[1 /* yy */], dist = mx * mx + my * my;
-                if (dist < cur_r && s[7 /* aa */] !== 1) {
-                    __.sprite_color(s, color, 1); // перекрашиваем в цвет
-                    s[7 /* aa */] = 1;
-                    cl_crcl++; // при перекрашивании увеличиваем счетчик шаров на 1                   
+                if (dist < cur_r) {
+                    if (__.sprite__pos_x(s) < __.WIDTH / 2 && iscolored[i] !== 1) {
+                        __.sprite_color(s, color_blue, 1); // перекрашиваем в цвет
+                        iscolored[i] = 1;
+                        cl_crcl++; // при перекрашивании увеличиваем счетчик шаров на 1    
+                    }
+                    else if (__.sprite__pos_x(s) > __.WIDTH / 2 && iscolored[i] !== 2) {
+                        __.sprite_color(s, color_yel, 1); // перекрашиваем в цвет
+                        iscolored[i] = 2;
+                        cl_crcl++; // при перекрашивании увеличиваем счетчик шаров на 1
+                    }
                 }
             }
             __.scounter_val(cnt_circles, cl_crcl); // устанавливаем в счетчик закрашенных шаров новое значение
