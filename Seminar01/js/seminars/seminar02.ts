@@ -1,7 +1,9 @@
 /// <reference path="../jplib/jplib.d.ts" />
 module __
 {
-    const CCOUNT:int = 100;
+    const CCOUNT :int = 100,
+        const_circles_yel :int = 124, // сколько нужно желтых шаров для победы
+        const_circles_blue :int = 55; // сколько нужно синих шаров для победы
     let circles:farray[] = [], // массив пустой, типа array
         target :farray,
         cnt_click :farray[], // счетчик кликов мышью
@@ -49,9 +51,12 @@ module __
             $frect (0, 0, WIDTH / 2, HEIGHT, "#a1abba");
         });
 
-        $$abc_symbols("game@cnt_click", 50, 0, 1, 0.5, 0.5, "#122d1a", 5, "0123456789, %"); // рисуем счетчик кликов мышью 
-        $$abc_symbols("game@cnt_circles_yel", 50, 0, 1, 0.5, 0.5, "#122d1a", 5, "0123456789, %"); // рисуем счетчик закрашенных шаров
-        $$abc_symbols("game@cnt_circles_blue", 50, 0, 1, 0.5, 0.5, "#122d1a", 5, "0123456789, %"); // рисуем счетчик закрашенных шаров 
+        $$abc_symbols("game@cnt_click", 50, 0, 1, 0.5, 0.5, "#122d1a", 5, "0123456789, /"); // рисуем счетчик кликов мышью 
+        $$abc_symbols("game@cnt_circles_yel", 50, 0, 1, 0.5, 0.5, "#122d1a", 5, "0123456789, /"); // рисуем счетчик закрашенных шаров
+        $$abc_symbols("game@cnt_circles_blue", 50, 0, 1, 0.5, 0.5, "#ad9601", 5, "0123456789, /"); // рисуем счетчик закрашенных шаров 
+
+        $$abc_symbols("game@const_circles_yel", 50, 0, 1, 0.5, 0.5, "#122d1a", 5, "0123456789, /"); // рисуем счетчик закрашенных шаров
+        $$abc_symbols("game@const_circles_blue", 50, 0, 1, 0.5, 0.5, "#ad9601", 5, "0123456789, /"); // рисуем счетчик закрашенных шаров 
 
         $$apply(); // закрывает
     });
@@ -69,8 +74,8 @@ module __
         sprites_color (cnt_circles_yel, 0x122d1a);
 
         cnt_circles_blue = scounter_create("game@cnt_circles_blue", 6);
-        sprites_color (cnt_circles_blue, 0x122d1a);
-
+        sprites_color (cnt_circles_blue, 0xad9601);
+        
         bg = sprite_create("game@bg", WIDTH / 4, HEIGHT / 2, WIDTH / 2, HEIGHT * 2);
 
         scounter_val(cnt_click, 10); // устанавливаем в счетчик 0
@@ -100,12 +105,12 @@ module __
     });
 
     function _resize(): void{
-        scounter_align(cnt_click, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
-        scounter_align(cnt_circles_yel, false, WIDTH, 0, ALIGNS.RT);
-        scounter_align(cnt_circles_blue, false, 0, 0, ALIGNS.RT);
+        scounter_align(cnt_click, false, WIDTH / 2, 100, ALIGNS.CC);
+        scounter_align(cnt_circles_yel, true, WIDTH - 200, 0, ALIGNS.RT);
+        scounter_align(cnt_circles_blue, true, 200, 0, ALIGNS.RT);
 
         scounter_val(cnt_click, 10); // устанавливаем 0, пока кликов мышью не было
-        scounter_align(cnt_click, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
+        scounter_align(cnt_click, false, WIDTH / 2, 100, ALIGNS.CC);
     };
 
 
@@ -156,7 +161,7 @@ module __
             let cl_click: int = scounter__val (cnt_click); // получили значение счетчика
             
             scounter_val(cnt_click, cl_click - 1); // установили значение счетчика + 1
-            scounter_align(cnt_click, false, WIDTH, HEIGHT - 10, ALIGNS.RB);
+            scounter_align(cnt_click, false, WIDTH / 2, 100, ALIGNS.CC);
         }
         return true;
     });
@@ -181,11 +186,17 @@ module __
                     dist = mx * mx + my * my;
                 if (dist < cur_r) {
                     if (sprite__pos_x(s) < WIDTH / 2 && iscolored[i] !== 1){
+                        if(iscolored[i] == 2){ // если шар был желтым, уменьшаем счетчик желтых шаров
+                            cl_crcl_y--;
+                        }
                         sprite_color(s, color_blue, 1); // перекрашиваем в цвет
                         iscolored[i] = 1;
                         cl_crcl_b++; // при перекрашивании увеличиваем счетчик шаров на 1    
                     }
                     else if(sprite__pos_x(s) > WIDTH / 2 && iscolored[i] !== 2){
+                        if(iscolored[i] == 1){ // если шар был синим, уменьшаем счетчик синих шаров
+                            cl_crcl_b--;
+                        }
                         sprite_color(s, color_yel, 1); // перекрашиваем в цвет
                         iscolored[i] = 2;
                         cl_crcl_y++; // при перекрашивании увеличиваем счетчик шаров на 1
@@ -195,8 +206,8 @@ module __
            
             scounter_val(cnt_circles_yel, cl_crcl_y); // устанавливаем в счетчик закрашенных шаров новое значение
             scounter_val(cnt_circles_blue, cl_crcl_b); // устанавливаем в счетчик закрашенных шаров новое значение
-            scounter_align(cnt_circles_yel, false, WIDTH, 0, ALIGNS.RT);  
-            scounter_align(cnt_circles_blue, false, WIDTH, 0, ALIGNS.RT);         
+            scounter_align(cnt_circles_yel, true, WIDTH - 200, 0, ALIGNS.RT);  
+            scounter_align(cnt_circles_blue, true, 200, 0, ALIGNS.RT);         
         }
     };
 
