@@ -39,43 +39,24 @@ var __;
      * Инициализация программы.
      */
     __.app_init(function () {
-        //массив с левелами
-        levels = [{
-                rects: [{ x: __.WIDTH / 4, y: __.HEIGHT / 2, w: __.WIDTH / 2, h: __.HEIGHT, color: 0xff0000 },
-                    { x: 3 * __.WIDTH / 4, y: __.HEIGHT / 2, w: __.WIDTH / 2, h: __.HEIGHT, color: 0x0000ff }],
-                counters: [10, 10],
-                colors: [0xff8080, 0x8080ff],
-                clicks: 12,
-                circles: 50
-            },
-            {
-                rects: [{ x: __.WIDTH / 2, y: __.HEIGHT / 4, w: __.WIDTH, h: __.HEIGHT / 2, color: 0xf00 },
-                    { x: __.WIDTH / 2, y: 3 * __.HEIGHT / 4, w: __.WIDTH, h: __.HEIGHT / 2, color: 0x00f }],
-                counters: [10, 10],
-                colors: [0xff8080, 0x8080ff],
-                clicks: 12,
-                circles: 50
-            }
-        ];
+        initConfig();
         //счетчик кликов
         counter_clicks = __.scounter_create("game@counter_clicks", 6);
         __.sprites_color(counter_clicks, 0xffffff);
-        __.scounter_align(counter_clicks, false, __.WIDTH / 2, 0, 33 /* CT */);
+        __.scounter_align(counter_clicks, false, __.WIDTH / 2, 10, 33 /* CT */);
         //таргет
         target = __.sprite_create("game@target");
-        __.sprite_color(target, 0xff0000);
+        __.sprite_color(target, 0x000000);
         __.sprite_alpha(target, 0);
         //счетчик очков
         points = __.scounter_create("game@points", 6);
         __.sprites_color(points, 0xffffff);
         __.scounter_align(points, false, __.WIDTH - 300, __.HEIGHT - 100, 17 /* LT */);
-        //Устанавливаем счетчик кликов в нужное число 
-        __.scounter_val(counter_clicks, levels[levelInd].clicks);
         createLevel();
     });
     var levelInd = 0, levelRects, levelsCircles, levelsCnts, levelsColCnts;
     function createLevel() {
-        var cfg = levels[levelInd], rects = cfg.rects, counters = cfg.counters, steps = cfg.steps, circles = cfg.circles, s, c;
+        var cfg = levels[levelInd], rects = cfg.rects, counters = cfg.counters, steps = cfg.steps, circles = cfg.circles, counter_align = cfg.counter_align, def_align = cfg.def_align, s, c;
         //Удаляем старый массив бг
         __.sprites_destroy(levelRects);
         levelRects = [];
@@ -114,12 +95,6 @@ var __;
             c = __.scounter_create("game@counters", 6);
             __.scounter_val(c, counters[i]);
             __.sprites_color(c, 0xffffff);
-            if (i == 1) {
-                __.scounter_align(c, true, __.WIDTH - 300, 0, 17 /* LT */);
-            }
-            if (i == 2) {
-                __.scounter_align(c, true, 10, 10, 17 /* LT */);
-            }
             levelsCnts.push(c);
         }
         //Создаем счетчики, в которые будем заносить кол-во закрашенных кружочков
@@ -127,49 +102,71 @@ var __;
             c = __.scounter_create("game@counters", 6);
             __.scounter_val(c, 0);
             __.sprites_color(c, 0xffffff);
-            if (i == 1) {
-                __.scounter_align(c, false, 300, 10, 65 /* RT */);
-            }
-            if (i == 2) {
-                __.scounter_align(c, true, __.WIDTH - 100, 0, 65 /* RT */);
-            }
             levelsColCnts.push(c);
         }
+        align();
         //Обнуляем счетчик очков           
         __.scounter_val(points, 0);
+        //Устанавливаем счетчик кликов в нужное число 
+        __.scounter_val(counter_clicks, levels[levelInd].clicks);
+    }
+    function initConfig() {
+        //массив с левелами
+        levels = [{
+                rects: [{ x: __.WIDTH / 4, y: __.HEIGHT / 2, w: __.WIDTH / 2, h: __.HEIGHT, color: 0xffff00 },
+                    { x: 3 * __.WIDTH / 4, y: __.HEIGHT / 2, w: __.WIDTH / 2, h: __.HEIGHT, color: 0x0000ff }],
+                counters: [10, 10],
+                counter_align: [{ xx: 300, yy: 10, align: 65 /* RT */ },
+                    { xx: __.WIDTH - 100, yy: 10, align: 65 /* RT */ }],
+                def_align: [{ xx: __.WIDTH - 300, yy: 10, align: 17 /* LT */ },
+                    { xx: 10, yy: 10, align: 17 /* LT */ }],
+                colors: [0xffff80, 0x8080ff],
+                clicks: 12,
+                circles: 50
+            },
+            {
+                rects: [{ x: __.WIDTH / 2, y: __.HEIGHT / 4, w: __.WIDTH, h: __.HEIGHT / 2, color: 0xffff00 },
+                    { x: __.WIDTH / 2, y: 3 * __.HEIGHT / 4, w: __.WIDTH, h: __.HEIGHT / 2, color: 0x0000ff }],
+                counters: [10, 10],
+                counter_align: [{ xx: __.WIDTH - 100, yy: 10, align: 65 /* RT */ },
+                    { xx: __.WIDTH - 100, yy: __.HEIGHT - 100, align: 65 /* RT */ }],
+                def_align: [{ xx: __.WIDTH - 300, yy: 10, align: 65 /* RT */ },
+                    { xx: __.WIDTH - 300, yy: __.HEIGHT - 100, align: 65 /* RT */ }],
+                colors: [0xffff80, 0x8080ff],
+                clicks: 12,
+                circles: 50
+            }
+        ];
+    }
+    function align() {
+        initConfig();
+        var cfg = levels[levelInd], counters = cfg.counters, counter_align = cfg.counter_align, def_align = cfg.def_align;
+        //создаем счетчики с готовыми значениями
+        for (var i = 0; i < counters.length; ++i) {
+            __.scounter_align(levelsCnts[i], true, def_align[i].xx, def_align[i].yy, def_align[i].align);
+        }
+        //Создаем счетчики, в которые будем заносить кол-во закрашенных кружочков
+        for (var i = 0; i < counters.length; ++i) {
+            __.scounter_align(levelsColCnts[i], false, counter_align[i].xx, counter_align[i].yy, counter_align[i].align);
+        }
     }
     /**
      * Изменение размеров контейнера канваса.
      */
     __.app_resize(_resize);
     function _resize() {
-        var s, cfg = levels[levelInd];
+        initConfig();
+        var s, cfg = levels[levelInd], rects = cfg.rects;
         //Выравниваем rects
         for (var i = 0; i < levelRects.length; ++i) {
-            __.sprite_pos(levelRects[i], cfg.rects[i].x, cfg.rects[i].y);
+            __.sprite_pos(levelRects[i], rects[i].x, rects[i].y);
+            __.sprite_size(levelRects[i], rects[i].w, rects[i].h);
         }
         //Выравниваем счетчик кликов
-        __.scounter_align(counter_clicks, false, __.WIDTH / 2, 0, 33 /* CT */);
+        __.scounter_align(counter_clicks, false, __.WIDTH / 2, 10, 33 /* CT */);
         //Выравниваем счетчик очков
         __.scounter_align(points, false, __.WIDTH - 300, __.HEIGHT - 100, 17 /* LT */);
-        //Выравниваем счетчики со значениями
-        for (var i = 0; i < levelsCnts.length; ++i) {
-            if (i == 1) {
-                __.scounter_align(levelsCnts[i], true, __.WIDTH - 300, 0, 17 /* LT */);
-            }
-            if (i == 2) {
-                __.scounter_align(levelsCnts[i], true, 10, 10, 17 /* LT */);
-            }
-        }
-        //Выравниваем счетчики с окрашенными шариками
-        for (var i = 0; i < levelsColCnts.length; ++i) {
-            if (i == 1) {
-                __.scounter_align(levelsColCnts[i], false, 300, 10, 65 /* RT */);
-            }
-            if (i == 2) {
-                __.scounter_align(levelsColCnts[i], true, __.WIDTH - 100, 0, 65 /* RT */);
-            }
-        }
+        align();
     }
     ;
     /**
@@ -186,6 +183,19 @@ var __;
             if (__.sprite__pos_y(s) < 0 || __.sprite__pos_y(s) > __.HEIGHT) {
                 s[23 /* cc */] *= -1; //меняем его движение на прямо противоположное
             }
+            for (var j = 0; j < levels[levelInd].circles; ++j) {
+                var s1 = levelsCircles[j], // спрайт следующего круга
+                //cur_r :pixels,
+                mx = __.sprite__pos_x(s) - s1[0 /* xx */], my = __.sprite__pos_y(s) - s1[1 /* yy */], dist = mx * mx + my * my;
+                if (i != j) {
+                    if (dist <= 2 * r * r * 2) {
+                        s[22 /* bb */] *= -1; //меняем его движение на прямо противоположное
+                        s[23 /* cc */] *= -1; //меняем его движение на прямо противоположное
+                        s1[22 /* bb */] *= -1; //меняем его движение на прямо противоположное
+                        s1[23 /* cc */] *= -1; //меняем его движение на прямо противоположное
+                    }
+                }
+            }
         }
         check_circles();
     });
@@ -201,29 +211,44 @@ var __;
                 if ((dist < cur_r) && s[7 /* aa */] == 0) {
                     for (var j = 0; j < levelRects.length; j++) {
                         //если спрайт попал в этот ректангл
-                        if (__.sprite__pos_y(s) < (cfg_1.rects[j].y + cfg_1.rects[j].h / 2) && __.sprite__pos_y(s) > (cfg_1.rects[j].y - cfg_1.rects[j].h / 2)
-                            && __.sprite__pos_x(s) < (cfg_1.rects[j].x + cfg_1.rects[j].w / 2) && __.sprite__pos_x(s) > (cfg_1.rects[j].x - cfg_1.rects[j].w / 2)) {
-                            __.log(cfg_1.colors[j]);
+                        var y_rect = cfg_1.rects[j].y, h_rect = cfg_1.rects[j].h, x_rect = cfg_1.rects[j].x, w_rect = cfg_1.rects[j].w, color_rect = cfg_1.colors[j], counter_rect = __.scounter__val(levelsColCnts[j]), color_sprite = __.sprite__color(s);
+                        if (__.sprite__pos_y(s) <= (y_rect + h_rect / 2) && __.sprite__pos_y(s) >= (y_rect - h_rect / 2)
+                            && __.sprite__pos_x(s) <= (x_rect + w_rect / 2) && __.sprite__pos_x(s) >= (x_rect - w_rect / 2)) {
                             //если спрайт еще не покрашен в цвет этого ректангла
-                            if (__.sprite__color(s) !== cfg_1.colors[j]) {
+                            if (color_sprite !== color_rect) {
+                                //Проверям он еще белый или покрашен уже в другой цвет
+                                for (var z = 0; z < cfg_1.colors.length; z++) {
+                                    //Если покрашен
+                                    if (color_sprite == cfg_1.colors[z]) {
+                                        //Уменьшаем счетчик того цвета на 1
+                                        var cur_cnt = __.scounter__val(levelsColCnts[z]);
+                                        cur_cnt--;
+                                        __.scounter_val(levelsColCnts[z], cur_cnt);
+                                    }
+                                }
                                 //то перекрашиваем спрайт в цвет этого ректангла
-                                __.sprite_color(s, cfg_1.colors[j], 1); // перекрашиваем в цвет
-                                /*let cur_cnt_val = scounter__val(levelsColCnts[j]);
-                                scounter_val(levelsColCnts[j], cur_cnt_val++);*/
+                                __.sprite_color(s, color_rect, 1);
+                                //увеличиваем счетчик шариков данного цвета
+                                counter_rect++;
+                                __.scounter_val(levelsColCnts[j], counter_rect);
+                                //Проверяем набрали ли мы нужное количество шариков после увеличения
+                                var flag = 0;
+                                for (var z = 0; z < cfg_1.rects.length; z++) {
+                                    if (__.scounter__val(levelsColCnts[z]) == cfg_1.counters[z])
+                                        flag++;
+                                    else
+                                        break;
+                                }
+                                if (flag == cfg_1.rects.length) {
+                                    levelInd++;
+                                    createLevel();
+                                }
                             }
                         }
                     }
                 }
             }
-            //Выравниваем счетчики с окрашенными шариками
-            for (var i = 0; i < levelsColCnts.length; ++i) {
-                if (i == 1) {
-                    __.scounter_align(levelsColCnts[i], false, 300, 10, 65 /* RT */);
-                }
-                if (i == 2) {
-                    __.scounter_align(levelsColCnts[i], true, __.WIDTH - 100, 0, 65 /* RT */);
-                }
-            }
+            align();
         }
     }
     ;
@@ -243,10 +268,8 @@ var __;
                     __.sprite_alpha(target, 0);
                 }, -240);
             }
-            else {
-                levelInd++;
+            else
                 createLevel();
-            }
         }
         return true;
     });
@@ -262,7 +285,7 @@ var __;
         __.sprites_draw(counter_clicks);
         for (var i = 0; i < levelsColCnts.length; i++)
             __.sprites_draw(levelsColCnts[i]);
-        __.sprites_draw(points);
+        //sprites_draw(points);
     });
 })(__ || (__ = {}));
 //# sourceMappingURL=seminar02.js.map

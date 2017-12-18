@@ -65,41 +65,22 @@ module __
      */
     app_init(() =>
     {
-        //массив с левелами
-        levels = [{
-            rects:[{x: WIDTH / 4, y: HEIGHT / 2, w: WIDTH / 2, h: HEIGHT, color: 0xff0000 },
-                   {x: 3 * WIDTH / 4, y: HEIGHT / 2, w: WIDTH / 2, h: HEIGHT, color: 0x0000ff }],
-            counters:[10,10],
-            colors:[0xff8080, 0x8080ff],
-            clicks:12,
-            circles:50
-        },
-        {
-            rects:[{x: WIDTH / 2, y: HEIGHT / 4, w: WIDTH, h: HEIGHT / 2, color: 0xf00 },
-                   {x: WIDTH / 2, y: 3 * HEIGHT / 4, w: WIDTH, h: HEIGHT / 2, color: 0x00f }],
-            counters:[10,10],
-            colors:[0xff8080, 0x8080ff],
-            clicks:12,
-            circles:50
-        }
-        ]
+        initConfig();
 
         //счетчик кликов
         counter_clicks = scounter_create("game@counter_clicks", 6);
         sprites_color(counter_clicks, 0xffffff);
-        scounter_align(counter_clicks, false, WIDTH / 2, 0, ALIGNS.CT);
+        scounter_align(counter_clicks, false, WIDTH / 2, 10, ALIGNS.CT);
 
         //таргет
         target = sprite_create("game@target");
-        sprite_color (target, 0xff0000);
+        sprite_color (target, 0x000000);
         sprite_alpha(target, 0);
 
         //счетчик очков
         points = scounter_create("game@points", 6);
         sprites_color(points, 0xffffff);
         scounter_align(points, false, WIDTH - 300, HEIGHT - 100, ALIGNS.LT);   
-         //Устанавливаем счетчик кликов в нужное число 
-        scounter_val(counter_clicks, levels[levelInd].clicks);
 
         createLevel();
     });
@@ -116,6 +97,8 @@ module __
             counters :int[] = cfg.counters,
             steps :int = cfg.steps,
             circles :int = cfg.circles,
+            counter_align :any[] = cfg.counter_align,
+            def_align :any[] = cfg.def_align,
             s :farray,
             c :farray[];
             //Удаляем старый массив бг
@@ -162,13 +145,7 @@ module __
                 c = scounter_create("game@counters", 6);
                 scounter_val(c, counters[i]);
                 sprites_color(c, 0xffffff);
-                if(i == 1){
-                    scounter_align(c, true, WIDTH - 300, 0, ALIGNS.LT);
-                }
-                if(i == 2){
-                    scounter_align(c, true, 10, 10, ALIGNS.LT);
-                } 
-                    levelsCnts.push(c);
+                levelsCnts.push(c);
             }
 
             //Создаем счетчики, в которые будем заносить кол-во закрашенных кружочков
@@ -177,18 +154,63 @@ module __
                 c = scounter_create("game@counters", 6); 
                 scounter_val(c, 0);
                 sprites_color(c, 0xffffff);
-                if(i == 1){
-                    scounter_align(c, false, 300, 10, ALIGNS.RT);
-                }
-                if(i == 2){
-                    scounter_align(c, true, WIDTH - 100, 0, ALIGNS.RT);
-                } 
                 levelsColCnts.push(c);
             }
-
-
+            align();
             //Обнуляем счетчик очков           
             scounter_val(points, 0);
+            //Устанавливаем счетчик кликов в нужное число 
+            scounter_val(counter_clicks, levels[levelInd].clicks);
+    }
+
+    function initConfig() :void{
+                //массив с левелами
+                levels = [{
+                    rects:[{x: WIDTH / 4, y: HEIGHT / 2, w: WIDTH / 2, h: HEIGHT, color: 0xffff00 },
+                           {x: 3 * WIDTH / 4, y: HEIGHT / 2, w: WIDTH / 2, h: HEIGHT, color: 0x0000ff }],
+                    counters:[10,10],
+                    counter_align:[{xx: 300, yy: 10, align: ALIGNS.RT},
+                                   {xx: WIDTH - 100, yy: 10, align: ALIGNS.RT}],
+                    def_align:[{xx: WIDTH - 300, yy: 10, align: ALIGNS.LT},
+                                   {xx: 10, yy: 10, align: ALIGNS.LT}],
+                    colors:[0xffff80, 0x8080ff],
+                    clicks:12,
+                    circles:50
+                },
+                {
+                    rects:[{x: WIDTH / 2, y: HEIGHT / 4, w: WIDTH, h: HEIGHT / 2, color: 0xffff00 },
+                           {x: WIDTH / 2, y: 3 * HEIGHT / 4, w: WIDTH, h: HEIGHT / 2, color: 0x0000ff }],
+                    counters:[10,10],
+                    counter_align:[{xx: WIDTH - 100, yy: 10, align: ALIGNS.RT},
+                                    {xx: WIDTH - 100, yy: HEIGHT - 100, align: ALIGNS.RT}],
+                    def_align:[{xx: WIDTH - 300, yy: 10, align: ALIGNS.RT},
+                                {xx: WIDTH - 300, yy: HEIGHT - 100, align: ALIGNS.RT}],
+                    colors:[0xffff80, 0x8080ff],
+                    clicks:12,
+                    circles:50
+                }
+                ]
+        
+    }
+
+    function align(): void{
+        initConfig();
+        let cfg :any = levels[levelInd],
+            counters :int[] = cfg.counters,
+            counter_align :any[] = cfg.counter_align,
+            def_align :any[] = cfg.def_align;
+         //создаем счетчики с готовыми значениями
+         for (let i = 0; i < counters.length; ++i)   
+         {
+             scounter_align(levelsCnts[i], true, def_align[i].xx, def_align[i].yy, def_align[i].align);
+         }
+
+         //Создаем счетчики, в которые будем заносить кол-во закрашенных кружочков
+         for (let i = 0; i < counters.length; ++i)   
+         {
+             scounter_align(levelsColCnts[i], false, counter_align[i].xx, counter_align[i].yy, counter_align[i].align);
+         }
+
     }
 
 
@@ -198,40 +220,30 @@ module __
     app_resize (_resize);
 
     function _resize(): void{
+        
+        initConfig();
 
         let s:farray,
-            cfg :any = levels[levelInd];
+            cfg :any = levels[levelInd],
+            rects :any[] = cfg.rects;
+
 
         //Выравниваем rects
         for(let i = 0; i < levelRects.length; ++i){
-            sprite_pos(levelRects[i], cfg.rects[i].x, cfg.rects[i].y);
+            sprite_pos(levelRects[i], rects[i].x, rects[i].y);
+            sprite_size(levelRects[i], rects[i].w, rects[i].h);
         }
 
         //Выравниваем счетчик кликов
-        scounter_align(counter_clicks, false, WIDTH / 2, 0, ALIGNS.CT);
+        scounter_align(counter_clicks, false, WIDTH / 2, 10, ALIGNS.CT);
 
         //Выравниваем счетчик очков
         scounter_align(points, false, WIDTH - 300, HEIGHT - 100, ALIGNS.LT);
 
-        //Выравниваем счетчики со значениями
-        for (let i = 0; i < levelsCnts.length; ++i){   
-            if(i == 1){
-                scounter_align(levelsCnts[i], true, WIDTH - 300, 0, ALIGNS.LT);
-            }
-            if(i == 2){
-                scounter_align(levelsCnts[i], true, 10, 10, ALIGNS.LT);
-            } 
-        }
-        //Выравниваем счетчики с окрашенными шариками
-        for (let i = 0; i < levelsColCnts.length; ++i){   
-            if(i == 1){
-                scounter_align(levelsColCnts[i], false, 300, 10, ALIGNS.RT);
-            }
-            if(i == 2){
-                scounter_align(levelsColCnts[i], true, WIDTH - 100, 0, ALIGNS.RT);
-            } 
-        }
+        align();
+
     };
+
 
     /**
      * Фреймовая анимация.
@@ -248,7 +260,25 @@ module __
             }
             if(sprite__pos_y (s) < 0 || sprite__pos_y (s) > HEIGHT){//если спрайт вылетает за экран по у,то
                 s[SP.cc] *= -1;//меняем его движение на прямо противоположное
-            }            
+            }
+            
+           for (let j = 0; j < levels[levelInd].circles; ++j){ 
+                let s1 = levelsCircles[j], // спрайт следующего круга
+                //cur_r :pixels,
+                mx :pixels = sprite__pos_x(s) - s1[SP.xx], 
+                my :pixels = sprite__pos_y(s) - s1[SP.yy],
+                dist = mx * mx + my * my;
+                if (i != j){
+
+                if (dist <= 2 * r * r * 2){
+                    s[SP.bb] *= -1; //меняем его движение на прямо противоположное
+                    s[SP.cc] *= -1; //меняем его движение на прямо противоположное
+
+                    s1[SP.bb] *= -1; //меняем его движение на прямо противоположное
+                    s1[SP.cc] *= -1; //меняем его движение на прямо противоположное
+                }
+            }
+            }
         }
 
         check_circles();
@@ -279,29 +309,51 @@ module __
                 if ((dist < cur_r) && s[SP.aa] == 0){//если кружочек попадает в цель
                     for(let j = 0; j < levelRects.length; j++){//проверяем для всех ректанглов
                         //если спрайт попал в этот ректангл
-                        if (sprite__pos_y(s) < (cfg.rects[j].y + cfg.rects[j].h / 2) && sprite__pos_y(s) > (cfg.rects[j].y - cfg.rects[j].h / 2)
-                            && sprite__pos_x(s) < (cfg.rects[j].x + cfg.rects[j].w / 2) && sprite__pos_x(s) > (cfg.rects[j].x - cfg.rects[j].w / 2)){
-                                log( cfg.colors[j]);
+                        let y_rect = cfg.rects[j].y,
+                            h_rect = cfg.rects[j].h,
+                            x_rect = cfg.rects[j].x,
+                            w_rect = cfg.rects[j].w,
+                            color_rect = cfg.colors[j],
+                            counter_rect = scounter__val(levelsColCnts[j]),
+                            color_sprite = sprite__color(s);
+                        if (sprite__pos_y(s) <= (y_rect + h_rect / 2) && sprite__pos_y(s) >= (y_rect - h_rect / 2)
+                            && sprite__pos_x(s) <= (x_rect + w_rect / 2) && sprite__pos_x(s) >= (x_rect - w_rect / 2)){
                                 //если спрайт еще не покрашен в цвет этого ректангла
-                                if(sprite__color(s) !== cfg.colors[j]){
+                                if(color_sprite !== color_rect){
+                                    //Проверям он еще белый или покрашен уже в другой цвет
+                                    for(let z = 0; z < cfg.colors.length; z++){
+                                        //Если покрашен
+                                        if (color_sprite == cfg.colors[z]){
+                                        //Уменьшаем счетчик того цвета на 1
+                                            let cur_cnt = scounter__val(levelsColCnts[z]);
+                                            cur_cnt--;
+                                            scounter_val(levelsColCnts[z], cur_cnt);
+                                        }
+                                    }
                                     //то перекрашиваем спрайт в цвет этого ректангла
-                                    sprite_color(s, cfg.colors[j], 1); // перекрашиваем в цвет
-                                    /*let cur_cnt_val = scounter__val(levelsColCnts[j]);
-                                    scounter_val(levelsColCnts[j], cur_cnt_val++);*/
+                                    sprite_color(s, color_rect, 1); 
+                                    //увеличиваем счетчик шариков данного цвета
+                                    counter_rect++;
+                                    scounter_val(levelsColCnts[j], counter_rect);
+                                    //Проверяем набрали ли мы нужное количество шариков после увеличения
+                                    let flag :int = 0;
+                                    for(let z = 0; z < cfg.rects.length; z++){
+                                        if(scounter__val(levelsColCnts[z]) == cfg.counters[z]) 
+                                            flag++;
+                                        else 
+                                            break;
+                                    }
+                                    if(flag == cfg.rects.length){ 
+                                        levelInd++;
+                                    createLevel();
+                                    }
                                 }
                         }
                     }
                 }
+                
             }
-            //Выравниваем счетчики с окрашенными шариками
-            for (let i = 0; i < levelsColCnts.length; ++i){   
-                if(i == 1){
-                    scounter_align(levelsColCnts[i], false, 300, 10, ALIGNS.RT);
-                }
-                if(i == 2){
-                    scounter_align(levelsColCnts[i], true, WIDTH - 100, 0, ALIGNS.RT);
-                } 
-            }       
+            align(); 
         }
 
     };
@@ -324,10 +376,8 @@ module __
                     sprite_alpha(target, 0);
                 }, -240);
             }
-            else{
-                levelInd++;
+            else
                 createLevel();
-            }
         }
         return true;
     });
@@ -346,7 +396,7 @@ module __
         sprites_draw(counter_clicks);
         for (let i = 0; i < levelsColCnts.length; i++)
             sprites_draw(levelsColCnts[i]);
-        sprites_draw(points);
+        //sprites_draw(points);
     });
 
 }
